@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IT AX Timeline</title>
+  <style>
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Thin.otf') format('opentype'); font-weight: 100; }
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-ExtraLight.otf') format('opentype'); font-weight: 200; }
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Light.otf') format('opentype'); font-weight: 300; }
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Regular.otf') format('opentype'); font-weight: 400; }
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Medium.otf') format('opentype'); font-weight: 500; }
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-SemiBold.otf') format('opentype'); font-weight: 600; }
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Bold.otf') format('opentype'); font-weight: 700; }
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-ExtraBold.otf') format('opentype'); font-weight: 800; }
+    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Black.otf') format('opentype'); font-weight: 900; }
+
+    @font-face {
+      font-family: 'Giants-Inline';
+      src: url('./Giants-Inline.otf') format('opentype');
+      font-weight: normal; font-style: normal;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d10;
+      --teal: #00d4b4;
+      --line: rgba(255,255,255,0.11);
+      --white: #f0f0f0;
+      --gray: #5a5a6e;
+      --a-clr: #7c6dfa;
+      --b-clr: #fa6d9a;
+      --c-clr: #00d4b4;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Pretendard', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 0.8rem;
+      padding: 56px 56px 88px;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header { margin-bottom: 40px; }
+    .header h1 { font-family: 'Giants-Inline', sans-serif; font-size: 1.85rem; font-weight: 800; color: var(--teal); letter-spacing: .04em; margin-bottom: 10px; }
+    .header p { font-size: .86rem; color: var(--gray); line-height: 1.7; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex; gap: 6px; margin-bottom: 48px;
+    }
+    .filter-btn {
+      padding: 5px 16px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.13);
+      background: transparent;
+      color: rgba(255,255,255,.38);
+      font-size: .72rem; font-weight: 600;
+      font-family: 'Pretendard', sans-serif;
+      letter-spacing: .04em;
+      cursor: pointer;
+      transition: background 150ms, border-color 150ms, color 150ms;
+    }
+    .filter-btn:hover { border-color: rgba(255,255,255,.3); color: rgba(255,255,255,.7); }
+    .filter-btn[data-team="all"].on  { border-color: rgba(255,255,255,.6); color: #fff; background: rgba(255,255,255,.06); }
+    .filter-btn[data-team="wp"].on   { border-color: var(--a-clr); color: var(--a-clr); background: rgba(124,109,250,.12); }
+    .filter-btn[data-team="es"].on   { border-color: var(--b-clr); color: var(--b-clr); background: rgba(250,109,154,.12); }
+    .filter-btn[data-team="ea"].on   { border-color: var(--c-clr); color: var(--c-clr); background: rgba(0,212,180,.12); }
+
+    /* ── FILTER DIMMING ── */
+    body[data-filter="wp"] .item-card:not(.team-wp),
+    body[data-filter="es"] .item-card:not(.team-es),
+    body[data-filter="ea"] .item-card:not(.team-ea) {
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    /* ── SNAKE ── */
+    .snake { display: flex; flex-direction: column; }
+
+    /* ── SEASON BLOCK ── */
+    .season-block { position: relative; }
+
+    .s-header {
+      display: flex; align-items: center; gap: 11px;
+      margin-bottom: 28px; position: relative; z-index: 2;
+    }
+    .s-season { font-size: 1.45rem; font-weight: 800; letter-spacing: .05em; }
+    .s-range { font-size: .66rem; color: var(--gray); letter-spacing: .08em; margin-left: 4px; }
+    .s-dir   { font-size: .68rem; color: var(--teal); opacity: .55; letter-spacing: .1em; margin-left: auto; }
+
+    /* ── MONTH GRID ── */
+    .month-grid {
+      display: flex;
+      position: relative;
+      margin-bottom: 4px;
+    }
+    /* ── GRADIENT FLOW KEYFRAMES ── */
+    /* Horizontal rail: colors scroll left→right (background-size 300%, shift 0%→100%) */
+    @keyframes flow-h {
+      from { background-position: 0% center; }
+      to   { background-position: 100% center; }
+    }
+    /* Vertical lines: colors scroll top→bottom */
+    @keyframes flow-v {
+      from { background-position: center 0%; }
+      to   { background-position: center 100%; }
+    }
+
+    /* Rail line */
+    .month-grid::before {
+      content: '';
+      position: absolute;
+      top: 4.5px;
+      left: calc(100% / 12);
+      right: calc(100% / 12);
+      height: 1px;
+      background: linear-gradient(90deg,
+        rgba(255,255,255,.05) 0%,
+        rgba(255,255,255,.28) 16.67%,
+        rgba(255,255,255,.10) 33.33%,
+        rgba(255,255,255,.05) 50%,
+        rgba(255,255,255,.28) 66.67%,
+        rgba(255,255,255,.10) 83.33%,
+        rgba(255,255,255,.05) 100%
+      );
+      background-size: 300% 100%;
+      animation: flow-h 14s linear infinite;
+      z-index: 0;
+    }
+    .rtl .month-grid { flex-direction: row-reverse; }
+
+    /* Month column */
+    .m-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    /* Dot */
+    .m-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: rgb(35,35,32);
+      border: 1px solid rgba(255,255,255,.13);
+      flex-shrink: 0;
+    }
+    .m-col.active .m-dot {
+      background: rgba(255,255,255,.85);
+      border-color: rgba(255,255,255,.7);
+      box-shadow: 0 0 6px rgba(255,255,255,.5), 0 0 16px rgba(255,255,255,.15);
+    }
+
+    /* Month label */
+    .m-label {
+      font-size: .55rem; font-weight: 600;
+      color: var(--gray); letter-spacing: .04em;
+      margin-top: 4px; text-align: center;
+    }
+    .m-col.active .m-label { color: rgba(255,255,255,.55); }
+
+    /* Connector */
+    .m-connector {
+      width: 1px; height: 12px;
+      background: rgba(255,255,255,.2);
+      margin-top: 5px;
+    }
+
+    /* Card stack */
+    .m-items {
+      display: flex; flex-direction: column;
+      align-items: stretch;
+      gap: 3px;
+      width: 70%; padding: 0 3px;
+    }
+
+    /* ── ITEM CARD ── */
+    .item-card {
+      width: 100%;
+      border-radius: 6px;
+      padding: 4px 6px 4px 8px;
+      border: 1px solid;
+      border-color: transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      position: relative;
+      z-index: 1;
+      transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, z-index 0ms;
+      cursor: default;
+    }
+    .item-card:hover { z-index: 200; }
+    .item-card.team-wp { border-color: rgba(124,109,250,.3); background: rgb(23,22,35); }
+    .item-card.team-es { border-color: rgba(250,109,154,.3); background: rgb(32,21,26); }
+    .item-card.team-ea { border-color: rgba(0,212,180,.3);   background: rgb(17,28,28); }
+    .item-card.team-wp:hover { transform: translateY(-1px); border-color: rgba(124,109,250,1); box-shadow: 0 4px 14px rgba(124,109,250,.22); }
+    .item-card.team-es:hover { transform: translateY(-1px); border-color: rgba(250,109,154,1); box-shadow: 0 4px 14px rgba(250,109,154,.22); }
+    .item-card.team-ea:hover { transform: translateY(-1px); border-color: rgba(0,212,180,1);   box-shadow: 0 4px 14px rgba(0,212,180,.22); }
+
+    /* Card header: badges row */
+    .card-header { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; }
+
+    /* Team badge */
+    .team-badge {
+      font-size: .5rem; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 1px 4px; border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .team-badge.wp { background: rgba(124,109,250,.28); color: #b0a6fc; }
+    .team-badge.es { background: rgba(250,109,154,.22); color: #fc9ec0; }
+    .team-badge.ea { background: rgba(0,212,180,.2);   color: #4de8ce; }
+
+    /* Category tags — 팀 색상 3종으로 통일 */
+    .tag {
+      display: inline-block; font-size: .5rem; font-weight: 500;
+      letter-spacing: .04em; padding: 1px 4px; border-radius: 3px;
+    }
+    .tag-wp { background: rgba(124,109,250,.18); color: #a99dfc; border: 1px solid rgba(124,109,250,.28); }
+    .tag-es { background: rgba(250,109,154,.15); color: #fc9ec0; border: 1px solid rgba(250,109,154,.25); }
+    .tag-ea { background: rgba(0,212,180,.14);   color: #4de8ce; border: 1px solid rgba(0,212,180,.24); }
+    /* Status */
+    .wip-badge {
+      font-size: .48rem; font-weight: 700;
+      padding: 1px 4px; border-radius: 3px;
+      background: rgba(250,180,50,.12); color: #f5b942;
+      border: 1px solid rgba(250,180,50,.28);
+    }
+
+    /* Card text */
+    .item-text { font-size: 0.8rem; color: #c0c0cc; line-height: 1.35; word-break: keep-all; }
+
+    /* ── SNAKE CONNECTORS ── */
+    .conn { position: relative; height: 52px; }
+    .conn::before {
+      content: ''; position: absolute; top: 0; height: 100%;
+      width: 1px;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,.05) 0%,
+        rgba(255,255,255,.28) 16.67%,
+        rgba(255,255,255,.10) 33.33%,
+        rgba(255,255,255,.05) 50%,
+        rgba(255,255,255,.28) 66.67%,
+        rgba(255,255,255,.10) 83.33%,
+        rgba(255,255,255,.05) 100%
+      );
+      background-size: 100% 300%;
+      animation: flow-v 14s linear infinite;
+    }
+    .conn.right::before { right: calc(100% / 12); }
+    .conn.left::before  { left:  calc(100% / 12); }
+
+    /* edge lines extend the vertical snake rail through the season block */
+    .edge-line {
+      position: absolute; width: 1px;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,.05) 0%,
+        rgba(255,255,255,.28) 16.67%,
+        rgba(255,255,255,.10) 33.33%,
+        rgba(255,255,255,.05) 50%,
+        rgba(255,255,255,.28) 66.67%,
+        rgba(255,255,255,.10) 83.33%,
+        rgba(255,255,255,.05) 100%
+      );
+      background-size: 100% 300%;
+      animation: flow-v 14s linear infinite;
+      z-index: 0; pointer-events: none;
+    }
+    .edge-line.right-top    { right: calc(100% / 12); top: 0; height: 64.5px; }
+    .edge-line.right-bottom { right: calc(100% / 12); top: 64.5px; bottom: 0; }
+    .edge-line.left-top     { left:  calc(100% / 12); top: 0; height: 64.5px; }
+    .edge-line.left-bottom  { left:  calc(100% / 12); top: 64.5px; bottom: 0; }
+
+    /* ── TOOLTIP (data container — 화면에 미노출) ── */
+    .card-tooltip { display: none; }
+
+    /* ── GLOBAL TOOLTIP LAYER (fixed, body 직속) ── */
+    #global-tooltip {
+      position: fixed;
+      width: 230px;
+      max-height: 360px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.15) transparent;
+      background: #111117;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 6px;
+      padding: 10px;
+      z-index: 9000;
+      box-shadow: 0 12px 32px rgba(0,0,0,.7);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 160ms ease, visibility 160ms ease, transform 160ms ease;
+    }
+    #global-tooltip.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    #global-tooltip { display: flex; flex-direction: column; }
+    #global-tooltip .tooltip-img {
+      width: 100%;
+      display: block;
+      border-radius: 3px;
+      cursor: zoom-in;
+      margin-top: 8px;
+      margin-bottom: 0;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,.07);
+      order: 1;
+    }
+    #global-tooltip .tooltip-desc {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: rgba(240,240,240,.58);
+      line-height: 1.65;
+      word-break: keep-all;
+      order: 0;
+    }
+
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.82);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+      backdrop-filter: blur(6px);
+    }
+    #lightbox.active { display: flex; }
+    #lb-img {
+      max-width: 88vw;
+      max-height: 88vh;
+      border-radius: 6px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.8);
+      pointer-events: none;
+    }
+
+    /* ── LEGEND ── */
+    .legend {
+      margin-top: 52px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+      padding-top: 20px; border-top: 1px solid var(--line);
+    }
+    .legend-section { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .legend-sep { width: 1px; height: 18px; background: var(--line); }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--gray); }
+    .legend-dot  { width: 7px; height: 7px; border-radius: 50%; }
+    .legend-tag  { font-size: .54rem; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+
+    /* ── DIM: 비활성 카드 흐리기 ── */
+    .item-card { transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, opacity 200ms ease; }
+    .item-card.dimmed { opacity: 0.2; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>IT AX Timeline</h1>
+  <p>WP · ES · EA 3개 팀의 시즌별 주요 업무를 단일 월 타임라인으로 통합 정리합니다.</p>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn on" data-team="all">전체</button>
+  <button class="filter-btn" data-team="wp">WP</button>
+  <button class="filter-btn" data-team="es">ES</button>
+  <button class="filter-btn" data-team="ea">EA</button>
+</div>
+
+<div class="snake">
+
+<!-- ══════════════════════════════════════════
+     ROW 1  |  2025 SS  |  Jan → Jun  (LTR)
+══════════════════════════════════════════ -->
+<div class="season-block">
+  <div class="s-header">
+    <span class="s-season">25SS</span>
+    <span class="s-range">Jan — Jun</span>
+  </div>
+  <div class="month-grid">
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">JAN</div></div>
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">FEB</div></div>
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">MAR</div></div>
+    <!-- APR: ES -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">APR</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">AI</span></div>
+          <div class="item-text">AI Agent 구축</div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">AI</span></div>
+          <div class="item-text">AI Agent 고도화</div>
+        </div>
+      </div>
+    </div>
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">MAY</div></div>
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">JUN</div></div>
+  </div>
+  <div class="edge-line right-bottom"></div>
+</div>
+
+<div class="conn right"></div>
+
+<!-- ══════════════════════════════════════════
+     ROW 2  |  2025 FW  |  Dec ← Jul  (RTL)
+     HTML: Jul…Dec  →  visual: Dec|Nov|Oct|Sep|Aug|Jul
+══════════════════════════════════════════ -->
+<div class="season-block rtl">
+  <div class="s-header">
+    <span class="s-season">25FW</span>
+    <span class="s-range">Jul — Dec</span>
+  </div>
+  <div class="month-grid">
+    <!-- JUL: WP -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">JUL</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">데이터 전처리 저장 구조 개선</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">AI 전처리 품질 개선을 위한 데이터 구조화 작업</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- AUG: WP x2 -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">AUG</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">서비스 오픈</div>
+          <div class="card-tooltip">
+            <img src="./tmp/service-open.png" class="tooltip-img" alt="서비스 오픈">
+            <p class="tooltip-desc">AI로 회의록을 자동으로 작성하고 분석한다.</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">AI 품의 추가 (사전 비용 품의)</div>
+          <div class="card-tooltip">
+            <img src="./tmp/cost.png" class="tooltip-img" alt="사전 비용 품의">
+            <p class="tooltip-desc">AI를 통해 견적서를 분석한다. (F&F)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- SEP: WP x2 -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">SEP</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">AI 요약 기능 일부 품의에 적용</div>
+          <div class="card-tooltip">
+            <img src="./tmp/yoyak.png" class="tooltip-img" alt="AI 요약 일부 적용">
+            <p class="tooltip-desc">기본 품의 등 일부 품의에 우선 적용</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">AI 품의 추가 (마케팅 비용 품의)</div>
+          <div class="card-tooltip">
+            <img src="./tmp/marketing.png" class="tooltip-img" alt="마케팅 비용 품의">
+            <p class="tooltip-desc">AI를 통해 견적서를 분석하고 품의 내용을 작성한다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- OCT: WP + EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">OCT</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">AI 번역 기능 추가</div>
+          <div class="card-tooltip">
+            <img src="./tmp/Translate.png" class="tooltip-img" alt="AI 번역 기능">
+            <p class="tooltip-desc">전자결재에서 다국어 번역 기능 지원</p>
+          </div>
+        </div>
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Orbit</span></div>
+          <div class="item-text">주요 기능 구현 (AI 채팅, Agent & Workflow)</div>
+        </div>
+      </div>
+    </div>
+    <!-- NOV: EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">NOV</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Orbit</span></div>
+          <div class="item-text">AI Agent 로컬 테스트 및 MCP Server 개발 환경 구성</div>
+        </div>
+      </div>
+    </div>
+    <!-- DEC: ES + EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">DEC</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
+          <div class="item-text">부가세신고 업무개선 (자동화) 1차</div>
+        </div>
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Weave</span></div>
+          <div class="item-text">임직원, 전자결재, 회의록, 근태 지식그래프 구축 및 연동</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="edge-line right-top"></div>
+  <div class="edge-line left-bottom"></div>
+</div>
+
+<div class="conn left"></div>
+
+<!-- ══════════════════════════════════════════
+     ROW 3  |  2026 SS  |  Jan → Jun  (LTR)
+══════════════════════════════════════════ -->
+<div class="season-block">
+  <div class="s-header">
+    <span class="s-season">26SS</span>
+    <span class="s-range">Jan — Jun</span>
+  </div>
+  <div class="month-grid">
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">JAN</div></div>
+    <!-- FEB: WP x2 -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">FEB</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">단어바꾸기 기능 추가</div>
+          <div class="card-tooltip">
+            <img src="./tmp/change.png" class="tooltip-img" alt="단어바꾸기 기능">
+            <p class="tooltip-desc">회의록에서 원하는 단어를 한번에 변경하는 기능</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">APP 서비스 추가</div>
+          <div class="card-tooltip">
+            <img src="./tmp/Document - detailPage.png" class="tooltip-img" alt="APP 서비스 추가">
+            <p class="tooltip-desc">회의록 서비스를 APP에서 동일하게 제공한다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- MAR: WP x2 + ES x4 + EA x1 -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">MAR</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">AI 요약 기능 모든 품의에 적용</div>
+          <div class="card-tooltip">
+            <img src="./tmp/yoyak.png" class="tooltip-img" alt="AI 요약 전체 적용">
+            <p class="tooltip-desc">전자결재의 모든 품의에 AI 요약 기능 적용</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">AI 품의 추가 (엔터테인먼트 비용 품의)</div>
+          <div class="card-tooltip">
+            <img src="./tmp/enter.jpg" class="tooltip-img" alt="엔터테인먼트 비용 품의">
+            <p class="tooltip-desc">AI를 통해 견적서를 분석한다. (F&F 엔터테인먼트)</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
+          <div class="item-text">수출 주문 프로세스 자동화</div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
+          <div class="item-text">HR ISMS 인증 준비작업</div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">기타</span></div>
+          <div class="item-text">데이터-AX연결 파이프라인, HR 웹전환 프로젝트</div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">기타</span></div>
+          <div class="item-text">생산비마감 프로세스 자동화</div>
+        </div>
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Orbit</span></div>
+          <div class="item-text">자연어 처리 기반 사내 데이터 마트 연동</div>
+        </div>
+      </div>
+    </div>
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">APR</div></div>
+    <!-- MAY: ES x2 + EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">MAY</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
+          <div class="item-text">원가 마감 (CO모듈) 자동화</div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">기타</span></div>
+          <div class="item-text">재고 이전전기 프로세스 고도화</div>
+        </div>
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Orbit</span></div>
+          <div class="item-text">AI Agent 클라우드 전환 및 MCP Server 운영 환경 배포</div>
+        </div>
+      </div>
+    </div>
+    <!-- JUN: WP + ES x3 -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">JUN</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">결재라인 UIUX 개선</div>
+          <div class="card-tooltip">
+            <img src="./tmp/line.png" class="tooltip-img" alt="결재라인 UIUX 개선">
+            <p class="tooltip-desc">품의 상신 시 결재라인의 UI UX 개선</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
+          <div class="item-text">AI-EAS 신규구축</div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
+          <div class="item-text">Vendor Portal 재구축</div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
+          <div class="item-text">부가세신고 업무개선 (자동화) 2차</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="edge-line left-top"></div>
+  <div class="edge-line right-bottom"></div>
+</div>
+
+<div class="conn right"></div>
+
+<!-- ══════════════════════════════════════════
+     ROW 4  |  2026 FW  |  Dec ← Jul  (RTL)
+     HTML: Jul…Dec  →  visual: Dec|Nov|Oct|Sep|Aug|Jul
+══════════════════════════════════════════ -->
+<div class="season-block rtl">
+  <div class="s-header">
+    <span class="s-season">26FW</span>
+    <span class="s-range">Jul — Dec</span>
+  </div>
+  <div class="month-grid">
+    <!-- JUL: EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">JUL</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Weave</span></div>
+          <div class="item-text">대용량 처리를 위한 분산 아키텍처 전환</div>
+        </div>
+      </div>
+    </div>
+    <!-- AUG: ES + EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">AUG</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">기타</span></div>
+          <div class="item-text">제조원가 명세서 자동 생성 프로세스</div>
+        </div>
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Weave</span></div>
+          <div class="item-text">재무(SAP FI) 및 IT 프로젝트관리(Jira) 지식그래프 구축</div>
+        </div>
+      </div>
+    </div>
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">SEP</div></div>
+    <!-- OCT: EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">OCT</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Threads</span></div>
+          <div class="item-text">사내 주요 데이터 (인사, 회계, M365) 소스 연동</div>
+        </div>
+      </div>
+    </div>
+    <!-- NOV: EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">NOV</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Threads</span></div>
+          <div class="item-text">배치성(CDC/Glue) 및 실시간(Kafka/Flink) 데이터 파이프라인 구축</div>
+        </div>
+      </div>
+    </div>
+    <!-- DEC: ES + EA -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">DEC</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
+          <div class="item-text">IFRS18 내부거래 (특수관계자거래) 준비작업</div>
+        </div>
+        <div class="item-card team-ea">
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Threads</span></div>
+          <div class="item-text">외부 연동 데이터 확장 적용</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="edge-line right-top"></div>
+</div>
+
+</div><!-- /snake -->
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-section">
+    <div class="legend-item"><span class="legend-tag tag-wp">WP</span><span style="color:var(--gray);font-size:.65rem">회의록 · 전자결재</span></div>
+  </div>
+  <div class="legend-sep"></div>
+  <div class="legend-section">
+    <div class="legend-item"><span class="legend-tag tag-es">ES</span><span style="color:var(--gray);font-size:.65rem">AI · 운영 · 기타</span></div>
+  </div>
+  <div class="legend-sep"></div>
+  <div class="legend-section">
+    <div class="legend-item"><span class="legend-tag tag-ea">EA</span><span style="color:var(--gray);font-size:.65rem">Orbit · Weave · Threads</span></div>
+  </div>
+</div>
+
+<!-- GLOBAL TOOLTIP -->
+<div id="global-tooltip"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox"><img id="lb-img" src="" alt="확대 이미지"></div>
+
+<script>
+  const lb       = document.getElementById('lightbox');
+  const lbImg    = document.getElementById('lb-img');
+  const gTooltip = document.getElementById('global-tooltip');
+  const allCards = Array.from(document.querySelectorAll('.item-card'));
+  const GAP      = 10;
+  let hideTimer  = null;
+
+  function showTooltip(card) {
+    const src = card.querySelector('.card-tooltip');
+    if (!src) return;
+
+    clearTimeout(hideTimer);
+    gTooltip.innerHTML = src.innerHTML;
+
+    // 이미지 클릭 → lightbox
+    gTooltip.querySelectorAll('.tooltip-img').forEach(img => {
+      img.addEventListener('click', e => {
+        e.stopPropagation();
+        lbImg.src = img.src;
+        lb.classList.add('active');
+      });
+    });
+
+    // 위치 계산 (fixed 기준)
+    const r  = card.getBoundingClientRect();
+    const tw = 230;
+    let left = r.right + GAP;
+    let top  = r.top;
+
+    if (left + tw > window.innerWidth - 8) left = r.left - tw - GAP;
+    const th = gTooltip.offsetHeight || 200;
+    if (top + th > window.innerHeight - 8) top = window.innerHeight - th - 8;
+    if (top < 8) top = 8;
+
+    gTooltip.style.left = left + 'px';
+    gTooltip.style.top  = top  + 'px';
+    gTooltip.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // 호버 카드 제외 나머지 dimming
+    allCards.forEach(c => {
+      if (c !== card) c.classList.add('dimmed');
+    });
+  }
+
+  function hideTooltip() {
+    hideTimer = setTimeout(() => {
+      gTooltip.classList.remove('active');
+      document.body.style.overflow = '';
+      allCards.forEach(c => c.classList.remove('dimmed'));
+    }, 80);
+  }
+
+  // 카드 이벤트
+  document.querySelectorAll('.item-card').forEach(card => {
+    if (!card.querySelector('.card-tooltip')) return;
+    card.addEventListener('mouseenter', () => showTooltip(card));
+    card.addEventListener('mouseleave', hideTooltip);
+  });
+
+  // 툴팁 위로 이동해도 유지
+  gTooltip.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+  gTooltip.addEventListener('mouseleave', hideTooltip);
+
+  // Lightbox 닫기
+  lb.addEventListener('click', () => lb.classList.remove('active'));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') lb.classList.remove('active');
+  });
+
+  // ── 팀 필터 ──
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      const team = btn.dataset.team;
+      if (team === 'all') {
+        document.body.removeAttribute('data-filter');
+      } else {
+        document.body.setAttribute('data-filter', team);
+      }
+    });
+  });
+</script>
+</body>
+</html>
