@@ -5,24 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IT AX Timeline</title>
   <style>
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Thin.otf') format('opentype'); font-weight: 100; }
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-ExtraLight.otf') format('opentype'); font-weight: 200; }
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Light.otf') format('opentype'); font-weight: 300; }
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Regular.otf') format('opentype'); font-weight: 400; }
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Medium.otf') format('opentype'); font-weight: 500; }
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-SemiBold.otf') format('opentype'); font-weight: 600; }
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Bold.otf') format('opentype'); font-weight: 700; }
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-ExtraBold.otf') format('opentype'); font-weight: 800; }
-    @font-face { font-family: 'Pretendard'; src: url('./Pretendard-Black.otf') format('opentype'); font-weight: 900; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-Thin.otf') format('opentype'); font-weight: 100; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-ExtraLight.otf') format('opentype'); font-weight: 200; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-Light.otf') format('opentype'); font-weight: 300; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-Regular.otf') format('opentype'); font-weight: 400; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-Medium.otf') format('opentype'); font-weight: 500; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-SemiBold.otf') format('opentype'); font-weight: 600; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-Bold.otf') format('opentype'); font-weight: 700; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-ExtraBold.otf') format('opentype'); font-weight: 800; }
+    @font-face { font-family: 'Pretendard'; src: url('./fonts/Pretendard-Black.otf') format('opentype'); font-weight: 900; }
 
     @font-face {
       font-family: 'Giants-Inline';
-      src: url('./Giants-Inline.otf') format('opentype');
+      src: url('./fonts/Giants-Inline.otf') format('opentype');
       font-weight: normal; font-style: normal;
     }
     @font-face {
       font-family: 'KOHIBaeum';
-      src: url('./KOHIBaeumOTF.otf') format('opentype');
+      src: url('./fonts/KOHIBaeumOTF.otf') format('opentype');
       font-weight: normal; font-style: normal;
     }
 
@@ -50,8 +50,8 @@
 
     /* ── HEADER ── */
     @keyframes shimmer-sweep {
-      0%   { background-position: 250% center; }
-      100% { background-position: -100% center; }
+      0%   { background-position: 0% center; }
+      100% { background-position: 100% center; }
     }
     .header { margin-top: 160px; margin-bottom: 160px; text-align: center; }
     .header h1 {
@@ -61,19 +61,18 @@
       display: inline-block;
       background: linear-gradient(
         to right,
-        rgba(180,180,180,1) 0%,
-        rgba(180,180,180,1) 20%,
-        rgba(255,255,255,1) 40%,
-        rgba(255,255,255,1) 60%,
-        rgba(180,180,180,1) 80%,
-        rgba(180,180,180,1) 100%
+        rgba(160,160,160,1) 0%,
+        rgba(160,160,160,1) 33%,
+        rgba(255,255,255,1) 50%,
+        rgba(160,160,160,1) 67%,
+        rgba(160,160,160,1) 100%
       );
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-size: 200% 100%;
-      background-position: 250% center;
-      animation: shimmer-sweep 3s linear 1.5s infinite;
+      background-size: 300% 100%;
+      background-position: 0% center;
+      animation: shimmer-sweep 4s linear infinite;
     }
     .header p { font-size: 1rem; color: rgba(255,255,255,.38); line-height: 1.7; }
 
@@ -271,7 +270,7 @@
     .m-items {
       display: flex; flex-direction: column;
       align-items: stretch;
-      gap: 3px;
+      gap: 4px;
       width: 70%; padding: 0 3px;
     }
 
@@ -279,7 +278,7 @@
     .item-card {
       width: 100%;
       border-radius: 6px;
-      padding: 4px 6px 4px 8px;
+      padding: 8px;
       border: 1px solid;
       border-color: transparent;
       display: flex;
