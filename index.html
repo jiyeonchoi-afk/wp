@@ -20,6 +20,11 @@
       src: url('./Giants-Inline.otf') format('opentype');
       font-weight: normal; font-style: normal;
     }
+    @font-face {
+      font-family: 'KOHIBaeum';
+      src: url('./KOHIBaeumOTF.otf') format('opentype');
+      font-weight: normal; font-style: normal;
+    }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -44,13 +49,37 @@
     }
 
     /* ── HEADER ── */
-    .header { margin-bottom: 40px; }
-    .header h1 { font-family: 'Giants-Inline', sans-serif; font-size: 1.85rem; font-weight: 800; color: var(--teal); letter-spacing: .04em; margin-bottom: 10px; }
-    .header p { font-size: .86rem; color: var(--gray); line-height: 1.7; }
+    @keyframes shimmer-sweep {
+      0%   { background-position: 250% center; }
+      100% { background-position: -100% center; }
+    }
+    .header { margin-top: 160px; margin-bottom: 160px; text-align: center; }
+    .header h1 {
+      font-family: 'KOHIBaeum', sans-serif;
+      font-size: 5rem; font-weight: normal;
+      letter-spacing: .04em; margin-bottom: 20px;
+      display: inline-block;
+      background: linear-gradient(
+        to right,
+        rgba(180,180,180,1) 0%,
+        rgba(180,180,180,1) 20%,
+        rgba(255,255,255,1) 40%,
+        rgba(255,255,255,1) 60%,
+        rgba(180,180,180,1) 80%,
+        rgba(180,180,180,1) 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 100%;
+      background-position: 250% center;
+      animation: shimmer-sweep 3s linear 1.5s infinite;
+    }
+    .header p { font-size: 1rem; color: rgba(255,255,255,.38); line-height: 1.7; }
 
     /* ── FILTER BAR ── */
     .filter-bar {
-      display: flex; gap: 6px; margin-bottom: 48px;
+      display: flex; gap: 12px; margin-bottom: 0; justify-content: center;
     }
     .filter-btn {
       padding: 5px 16px; border-radius: 20px;
@@ -64,10 +93,53 @@
       transition: background 150ms, border-color 150ms, color 150ms;
     }
     .filter-btn:hover { border-color: rgba(255,255,255,.3); color: rgba(255,255,255,.7); }
+    .btn-count {
+      display: inline-block; margin-left: 5px;
+      font-size: .6rem; font-weight: 700; opacity: .55;
+      vertical-align: middle;
+    }
     .filter-btn[data-team="all"].on  { border-color: rgba(255,255,255,.6); color: #fff; background: rgba(255,255,255,.06); }
     .filter-btn[data-team="wp"].on   { border-color: var(--a-clr); color: var(--a-clr); background: rgba(124,109,250,.12); }
     .filter-btn[data-team="es"].on   { border-color: var(--b-clr); color: var(--b-clr); background: rgba(250,109,154,.12); }
     .filter-btn[data-team="ea"].on   { border-color: var(--c-clr); color: var(--c-clr); background: rgba(0,212,180,.12); }
+
+    /* ── LEGEND BAR ── */
+    .sticky-nav {
+      position: sticky; top: 16px; z-index: 500;
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 60px;
+      width: fit-content;
+      margin: 0 auto 44px;
+      transition: border-radius 250ms ease;
+    }
+    .sticky-nav.legend-open { border-radius: 20px; }
+    .legend-bar { }
+    .legend-section { display: none; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .legend-section.visible { display: flex; margin-top: 10px; }
+
+    .tag-btn {
+      padding: 3px 10px; border-radius: 4px;
+      font-size: .65rem; font-weight: 400;
+      font-family: 'Pretendard', sans-serif;
+      cursor: pointer; border: 1px solid transparent;
+      transition: opacity 150ms, border-color 150ms, background 150ms;
+      letter-spacing: .03em; opacity: 0.55;
+    }
+    .tag-btn:hover { opacity: 0.85; }
+    .tag-btn.wp,
+    .tag-btn.es,
+    .tag-btn.ea { color: white; background: rgba(250,250,250,.1); border-color: rgba(250,250,250,.1); }
+    .tag-btn.on { opacity: 1; }
+    .tag-btn.on.wp { background: rgba(124,109,250,.25); border-color: var(--a-clr); color: var(--a-clr); }
+    .tag-btn.on.es { background: rgba(250,109,154,.25); border-color: var(--b-clr); color: var(--b-clr); }
+    .tag-btn.on.ea { background: rgba(0,212,180,.25);   border-color: var(--c-clr); color: var(--c-clr); }
+
+    /* ── TAG DIM ── */
+    .item-card.tag-dimmed { opacity: 0.08 !important; pointer-events: none; }
 
     /* ── FILTER DIMMING ── */
     body[data-filter="wp"] .item-card:not(.team-wp),
@@ -147,11 +219,37 @@
       background: rgb(35,35,32);
       border: 1px solid rgba(255,255,255,.13);
       flex-shrink: 0;
+      position: relative;
     }
     .m-col.active .m-dot {
       background: rgba(255,255,255,.85);
       border-color: rgba(255,255,255,.7);
       box-shadow: 0 0 6px rgba(255,255,255,.5), 0 0 16px rgba(255,255,255,.15);
+    }
+
+    /* ── 현재 월 펄스 ── */
+    @keyframes pulse-ring {
+      0%   { transform: translate(-50%, -50%) scale(1);   opacity: .6; }
+      100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0;  }
+    }
+    .m-col.current-month .m-dot {
+      background: var(--teal);
+      border-color: var(--teal);
+      box-shadow: 0 0 8px rgba(0,212,180,.7), 0 0 20px rgba(0,212,180,.3);
+    }
+    .m-col.current-month .m-dot::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: var(--teal);
+      opacity: .5;
+      animation: pulse-ring 1.8s ease-out infinite;
+    }
+    .m-col.current-month .m-label {
+      color: var(--teal);
+      font-weight: 700;
     }
 
     /* Month label */
@@ -325,6 +423,15 @@
       order: 0;
     }
 
+    /* ── TOOLTIP SUB (태그별 구분 설명) ── */
+    .tooltip-sub { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .tooltip-sub:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .tooltip-sub-tag {
+      display: inline-block; font-size: .62rem; font-weight: 600;
+      color: rgba(255,255,255,.5); background: rgba(255,255,255,.08);
+      border-radius: 3px; padding: 1px 6px; margin-bottom: 5px;
+    }
+
     /* ── LIGHTBOX ── */
     #lightbox {
       display: none;
@@ -346,35 +453,63 @@
       pointer-events: none;
     }
 
-    /* ── LEGEND ── */
-    .legend {
-      margin-top: 52px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
-      padding-top: 20px; border-top: 1px solid var(--line);
-    }
-    .legend-section { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .legend-sep { width: 1px; height: 18px; background: var(--line); }
-    .legend-item { display: flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--gray); }
-    .legend-dot  { width: 7px; height: 7px; border-radius: 50%; }
     .legend-tag  { font-size: .54rem; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
 
     /* ── DIM: 비활성 카드 흐리기 ── */
     .item-card { transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease, opacity 200ms ease; }
     .item-card.dimmed { opacity: 0.2; }
+    .s-header { transition: opacity 200ms ease; }
+    .s-header.dimmed { opacity: 0.15; }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>IT AX Timeline</h1>
+  <h1>IT AX<br>Timeline</h1>
   <p>WP · ES · EA 3개 팀의 시즌별 주요 업무를 단일 월 타임라인으로 통합 정리합니다.</p>
 </div>
 
+<div class="sticky-nav">
 <div class="filter-bar">
   <button class="filter-btn on" data-team="all">전체</button>
   <button class="filter-btn" data-team="wp">WP</button>
   <button class="filter-btn" data-team="es">ES</button>
   <button class="filter-btn" data-team="ea">EA</button>
 </div>
+
+<div class="legend-bar">
+  <!-- WP 태그 -->
+  <div class="legend-section legend-wp">
+    <button class="tag-btn wp" data-tag="회의록">회의록</button>
+    <button class="tag-btn wp" data-tag="전자결재">전자결재</button>
+    <button class="tag-btn wp" data-tag="ECOMS">ECOMS</button>
+    <button class="tag-btn wp" data-tag="자사몰">자사몰</button>
+    <button class="tag-btn wp" data-tag="기타">기타</button>
+  </div>
+  <!-- ES 태그 -->
+  <div class="legend-section legend-es">
+    <button class="tag-btn es" data-tag="WMS">WMS</button>
+    <button class="tag-btn es" data-tag="SAP ERP">SAP ERP</button>
+    <button class="tag-btn es" data-tag="S-ERP">S-ERP</button>
+    <button class="tag-btn es" data-tag="SCM_MERP">SCM_MERP</button>
+    <button class="tag-btn es" data-tag="SCM_GSCM">SCM_GSCM</button>
+    <button class="tag-btn es" data-tag="SCM_GOMS">SCM_GOMS</button>
+    <button class="tag-btn es" data-tag="SCM_NEW PLM">SCM_NEW PLM</button>
+    <button class="tag-btn es" data-tag="SCM_F&amp;CO">SCM_F&amp;CO</button>
+    <button class="tag-btn es" data-tag="F&amp;Co EAS">F&amp;Co EAS</button>
+    <button class="tag-btn es" data-tag="SMS">SMS</button>
+  </div>
+  <!-- EA 태그 -->
+  <div class="legend-section legend-ea">
+    <button class="tag-btn ea" data-tag="AI Agent Eco">AI Agent Eco</button>
+    <button class="tag-btn ea" data-tag="M365">M365</button>
+    <button class="tag-btn ea" data-tag="AWS">AWS</button>
+    <button class="tag-btn ea" data-tag="OCI">OCI</button>
+    <button class="tag-btn ea" data-tag="Threads">Threads</button>
+    <button class="tag-btn ea" data-tag="Weave">Weave</button>
+  </div>
+</div>
+</div><!-- /sticky-nav -->
 
 <div class="snake">
 
@@ -390,23 +525,43 @@
     <div class="m-col"><div class="m-dot"></div><div class="m-label">JAN</div></div>
     <div class="m-col"><div class="m-dot"></div><div class="m-label">FEB</div></div>
     <div class="m-col"><div class="m-dot"></div><div class="m-label">MAR</div></div>
-    <!-- APR: ES -->
+    <div class="m-col"><div class="m-dot"></div><div class="m-label">APR</div></div>
+    <!-- MAY: WP + ES -->
     <div class="m-col active">
-      <div class="m-dot"></div><div class="m-label">APR</div>
+      <div class="m-dot"></div><div class="m-label">MAY</div>
       <div class="m-connector"></div>
       <div class="m-items">
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">AI</span></div>
-          <div class="item-text">AI Agent 구축</div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">AI 클레임 요약 및 번역</div>
+          <div class="card-tooltip">
+            <img src="./tmp/claim.png" class="tooltip-img" alt="AI 클레임 요약 및 번역">
+            <p class="tooltip-desc">고객 클레임 내용을 요약하고 다국어로 번역하여 물류 현장의 외국인 근로자 지원</p>
+          </div>
         </div>
         <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">AI</span></div>
-          <div class="item-text">AI Agent 고도화</div>
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SAP ERP</span></div>
+          <div class="item-text">생성형 AI를 활용한 업무 자동화</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">Google Vertex AI + E-mail 수집을 활용한 SAP 업무 자동화</p>
+          </div>
         </div>
       </div>
     </div>
-    <div class="m-col"><div class="m-dot"></div><div class="m-label">MAY</div></div>
-    <div class="m-col"><div class="m-dot"></div><div class="m-label">JUN</div></div>
+    <!-- JUN: ES -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">JUN</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SMS</span></div>
+          <div class="item-text">SMS 매장대상 챗봇</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">SMS 챗봇으로 매뉴얼 RAG기반으로 동작</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="edge-line right-bottom"></div>
 </div>
@@ -423,7 +578,7 @@
     <span class="s-range">Jul — Dec</span>
   </div>
   <div class="month-grid">
-    <!-- JUL: WP -->
+    <!-- JUL: WP x4 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">JUL</div>
       <div class="m-connector"></div>
@@ -435,9 +590,30 @@
             <p class="tooltip-desc">AI 전처리 품질 개선을 위한 데이터 구조화 작업</p>
           </div>
         </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">주문 취소 메시지 분석</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">판매채널의 주문 취소 메시지를 분석하여 물류 출고 취소를 자동으로 지시</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">AI 상품정보 번역</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">글로벌몰 운영을 위해 상품명 및 상세 정보를 자동 번역</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">AI 이미지컷 구분 자동화</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">상품 이미지 업로드 시 컷 유형(일반, 누끼, 남성, 여성컷)을 자동으로 분류</p>
+          </div>
+        </div>
       </div>
     </div>
-    <!-- AUG: WP x2 -->
+    <!-- AUG: WP x2 + EA x3 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">AUG</div>
       <div class="m-connector"></div>
@@ -458,9 +634,32 @@
             <p class="tooltip-desc">AI를 통해 견적서를 분석한다. (F&F)</p>
           </div>
         </div>
+        <div class="item-card team-ea">
+          <div class="card-header">
+            <span class="team-badge ea">EA</span>
+            <span class="tag tag-ea">M365</span>
+            <span class="tag tag-ea">AWS</span>
+            <span class="tag tag-ea">OCI</span>
+          </div>
+          <div class="item-text">MCP 및 RAG 기반 FAQ 챗 서비스</div>
+          <div class="card-tooltip">
+            <div class="tooltip-sub">
+              <span class="tooltip-sub-tag">M365</span>
+              <p class="tooltip-desc">M365 사용에 자주 묻는 질의 및 서비스 상태 관리 AI Agent</p>
+            </div>
+            <div class="tooltip-sub">
+              <span class="tooltip-sub-tag">AWS</span>
+              <p class="tooltip-desc">AWS 리소스 상태 관리 AI Agent</p>
+            </div>
+            <div class="tooltip-sub">
+              <span class="tooltip-sub-tag">OCI</span>
+              <p class="tooltip-desc">OCI 리소스 상태 및 쿼리 성능 평가 및 튜닝 AI Agent</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <!-- SEP: WP x2 -->
+    <!-- SEP: WP x2 + ES -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">SEP</div>
       <div class="m-connector"></div>
@@ -481,9 +680,16 @@
             <p class="tooltip-desc">AI를 통해 견적서를 분석하고 품의 내용을 작성한다.</p>
           </div>
         </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SAP ERP</span></div>
+          <div class="item-text">매뉴얼 파일 분석 기능 추가</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">SAP 외부 데이터 분석을 통한 업무 지원</p>
+          </div>
+        </div>
       </div>
     </div>
-    <!-- OCT: WP + EA -->
+    <!-- OCT: WP x2 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">OCT</div>
       <div class="m-connector"></div>
@@ -496,35 +702,98 @@
             <p class="tooltip-desc">전자결재에서 다국어 번역 기능 지원</p>
           </div>
         </div>
-        <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Orbit</span></div>
-          <div class="item-text">주요 기능 구현 (AI 채팅, Agent & Workflow)</div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">세무리스크 알림 (이전 분기 전표 상신)</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">전표 품의를 분석하여 세액 변동 사항 사전 탐지하여 알림 발송</p>
+          </div>
         </div>
       </div>
     </div>
-    <!-- NOV: EA -->
+    <!-- NOV: WP x4 + ES x2 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">NOV</div>
       <div class="m-connector"></div>
       <div class="m-items">
-        <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Orbit</span></div>
-          <div class="item-text">AI Agent 로컬 테스트 및 MCP Server 개발 환경 구성</div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">회의록 정리 프롬프트 업데이트</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">정확도 높은 내용과 논리적 구조를 갖춘 결과물 생성하도록 개선</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">EC OMS MCP Server 기반 분석 효율화</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">자연어 질의를 통해 브랜드, 매출, 클레임, O2O 등 주요 데이터를 조회</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">주문량 급등/급락 감지</div>
+          <div class="card-tooltip">
+            <img src="./tmp/order-fluctuation.png" class="tooltip-img" alt="주문량 급등 급락 감지">
+            <p class="tooltip-desc">ML 기반 주문량 급등·급락 감지 및 AI가 기사·커뮤니티 기반 원인 분석</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">출고량 이상 감지</div>
+          <div class="card-tooltip">
+            <img src="./tmp/shipment-anomaly.png" class="tooltip-img" alt="출고량 이상 감지">
+            <p class="tooltip-desc">평시 패턴과 다른 출고 흐름 감지하여 출고 리스크 인지</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">WMS</span></div>
+          <div class="item-text">생산업체 RFID 검수 품질 분석 및 입고알림</div>
+          <div class="card-tooltip">
+            <img src="./tmp/RFID.jpg" class="tooltip-img" alt="RFID 검수">
+            <p class="tooltip-desc">업체RFID 검수 내역 분석을 통한 당일 검수 품질 및 시계열 납품 품질 평가, Team 자동 보고 알림 서비스</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SAP ERP</span></div>
+          <div class="item-text">AI coding assistant</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">AI coding 지원 환경 구축을 통한 단순개선업무 속도 향상</p>
+          </div>
         </div>
       </div>
     </div>
-    <!-- DEC: ES + EA -->
+    <!-- DEC: WP x2 + ES -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">DEC</div>
       <div class="m-connector"></div>
       <div class="m-items">
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
-          <div class="item-text">부가세신고 업무개선 (자동화) 1차</div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">코멘트 다국어 번역 지원</div>
+          <div class="card-tooltip">
+            <img src="./tmp/comment-translate.png" class="tooltip-img" alt="코멘트 번역">
+            <p class="tooltip-desc">코멘트 조회 시 다국어 번역 기능 지원</p>
+          </div>
         </div>
-        <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Weave</span></div>
-          <div class="item-text">임직원, 전자결재, 회의록, 근태 지식그래프 구축 및 연동</div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">출고 배분 자동화</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">재고 대비 주문 수량을 기반으로, 주문 초과 시 O2O 재고까지 활용하여 최적의 출고를 자동 배분</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header">
+            <span class="team-badge es">ES</span>
+            <span class="tag tag-es">SCM_MERP</span>
+            <span class="tag tag-es">SCM_GSCM</span>
+            <span class="tag tag-es">SCM_GOMS</span>
+          </div>
+          <div class="item-text">RAG 기반 AI CHATBOT</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">사내 문서(Manual) 기반 AI 지식 검색 및 맞춤형 답변 제공</p>
+          </div>
         </div>
       </div>
     </div>
@@ -544,15 +813,61 @@
     <span class="s-range">Jan — Jun</span>
   </div>
   <div class="month-grid">
-    <div class="m-col"><div class="m-dot"></div><div class="m-label">JAN</div></div>
-    <!-- FEB: WP x2 -->
+    <!-- JAN: WP + ES x4 -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">JAN</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">주문금액 자동 감지</div>
+          <div class="card-tooltip">
+            <img src="./tmp/order-detect.png" class="tooltip-img" alt="주문금액 자동 감지">
+            <p class="tooltip-desc">주문금액·ERP판매가 불일치 시 자동 출고 보류 처리 및 모니터링 알림</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">WMS</span></div>
+          <div class="item-text">웨이브 실행 전략 가이드</div>
+          <div class="card-tooltip">
+            <img src="./tmp/Wave_Guide.jpg" class="tooltip-img" alt="웨이브 실행 전략 가이드">
+            <p class="tooltip-desc">웨이브 작업 배치 별 매장 오더 정보 분석을 통한 실행 전략 AI 가이드 서비스</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">WMS</span></div>
+          <div class="item-text">AI 업무 어시스턴트 챗봇</div>
+          <div class="card-tooltip">
+            <img src="./tmp/AI_chatbot.jpg" class="tooltip-img" alt="AI 업무 어시스턴트 챗봇">
+            <p class="tooltip-desc">매뉴얼, 주요 업무 프로세스 MCP 기반 범용 업무 관련 답변 서비스</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">S-ERP</span></div>
+          <div class="item-text">RAG 기반 AI chatbot</div>
+          <div class="card-tooltip">
+            <img src="./tmp/rag_chatbot.png" class="tooltip-img" alt="RAG 기반 AI chatbot">
+            <p class="tooltip-desc">사내 문서 기반 AI 지식 검색 및 맞춤형 답변 제공</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">S-ERP</span></div>
+          <div class="item-text">Workflow 기반 AI Agent</div>
+          <div class="card-tooltip">
+            <img src="./tmp/workflow_agent.png" class="tooltip-img" alt="Workflow 기반 AI Agent">
+            <p class="tooltip-desc">스케줄링 기반 워크플로우 자동화 및 AI 처리 결과 알림 제공</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- FEB: WP x2 + ES x2 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">FEB</div>
       <div class="m-connector"></div>
       <div class="m-items">
         <div class="item-card team-wp">
           <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
-          <div class="item-text">단어바꾸기 기능 추가</div>
+          <div class="item-text">텍스트 치환 기능 추가</div>
           <div class="card-tooltip">
             <img src="./tmp/change.png" class="tooltip-img" alt="단어바꾸기 기능">
             <p class="tooltip-desc">회의록에서 원하는 단어를 한번에 변경하는 기능</p>
@@ -566,13 +881,41 @@
             <p class="tooltip-desc">회의록 서비스를 APP에서 동일하게 제공한다.</p>
           </div>
         </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SCM_MERP</span></div>
+          <div class="item-text">생산현황 모니터링</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">DB &amp; API &amp; CLAUDE 를 통한 TEAMS WEBHOOK 인사이트 제공</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SCM_MERP</span></div>
+          <div class="item-text">시험성적서를 통한 혼용율 자동 산출</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">시험성적서(PDF) 기반문서를 토대로 혼용율 자동 산출 기능 제공 SCM OCR Agent</p>
+          </div>
+        </div>
       </div>
     </div>
-    <!-- MAR: WP x2 + ES x4 + EA x1 -->
-    <div class="m-col active">
+    <!-- MAR: WP x3 + EA x1 (현재 월) -->
+    <div class="m-col active current-month">
       <div class="m-dot"></div><div class="m-label">MAR</div>
       <div class="m-connector"></div>
       <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">기타</span></div>
+          <div class="item-text">법인카드 신규 발급 품의</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">AI가 제출된 신분증, 통장사본의 시인성을 판단 후 안내</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">요약 프롬프트 업데이트</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">핵심 내용을 요약하여 결재 판단 속도와 정확성 개선</p>
+          </div>
+        </div>
         <div class="item-card team-wp">
           <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
           <div class="item-text">AI 요약 기능 모든 품의에 적용</div>
@@ -586,56 +929,131 @@
           <div class="item-text">AI 품의 추가 (엔터테인먼트 비용 품의)</div>
           <div class="card-tooltip">
             <img src="./tmp/enter.jpg" class="tooltip-img" alt="엔터테인먼트 비용 품의">
-            <p class="tooltip-desc">AI를 통해 견적서를 분석한다. (F&F 엔터테인먼트)</p>
+            <p class="tooltip-desc">AI를 통해 견적서를 분석한다. (F&amp;F 엔터테인먼트)</p>
           </div>
         </div>
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
-          <div class="item-text">수출 주문 프로세스 자동화</div>
-        </div>
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
-          <div class="item-text">HR ISMS 인증 준비작업</div>
-        </div>
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">기타</span></div>
-          <div class="item-text">데이터-AX연결 파이프라인, HR 웹전환 프로젝트</div>
-        </div>
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">기타</span></div>
-          <div class="item-text">생산비마감 프로세스 자동화</div>
-        </div>
         <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Orbit</span></div>
-          <div class="item-text">자연어 처리 기반 사내 데이터 마트 연동</div>
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">AI Agent Eco</span></div>
+          <div class="item-text">Orbit (MCP Server MarketPlace) 구축</div>
+          <div class="card-tooltip">
+            <img src="./tmp/Orbit_MCP.png" class="tooltip-img" alt="Orbit MCP Server MarketPlace">
+            <p class="tooltip-desc">AI Agent가 사내외 서비스 연동을 위한 사내 MCP Server Hub-And-Fork 서비스</p>
+          </div>
         </div>
       </div>
     </div>
-    <div class="m-col"><div class="m-dot"></div><div class="m-label">APR</div></div>
-    <!-- MAY: ES x2 + EA -->
+    <!-- APR: WP x6 + ES x3 -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">APR</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">화자매칭 기능 추가</div>
+          <div class="card-tooltip">
+            <img src="./tmp/speaker.png" class="tooltip-img" alt="화자매칭 기능">
+            <p class="tooltip-desc">음성 분석 기술을 통해 화자를 정확히 식별하고 매칭</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
+          <div class="item-text">세무리스크 알림 (해외송금)</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">과세누락 방지 및 원천징수세 관련 사전 검토하여 알림 발송</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">기타</span></div>
+          <div class="item-text">통신비 영수증 제출</div>
+          <div class="card-tooltip">
+            <img src="./tmp/comm-fee.png" class="tooltip-img" alt="통신비 영수증 제출">
+            <p class="tooltip-desc">통신비 영수증 AI 분석을 통해 증빙파일 검증하여 업무 자동화</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">자사몰</span></div>
+          <div class="item-text">자사몰 전시 재설계</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">키워드 중심 랜딩 페이지 구조로 변경 및 동적 랜딩 페이지 시스템 구축</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SAP ERP</span></div>
+          <div class="item-text">Data Analysis &amp; Forecast</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">SAP 데이터 추출 및 AI Tool 연동을 통한 분석 및 예측 구현</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SCM_F&amp;CO</span></div>
+          <div class="item-text">부자재 내수(직송) 입고 관리 업무</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">OCR, 룰엔진+AI 분석을 입고 처리 자동화 기능 SCM OCR Agent / Naver Clova / Claude</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SCM_F&amp;CO</span></div>
+          <div class="item-text">부자재 입고 확정처리</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">부자재 확정/리젝 처리 기능 DB &amp; API &amp; TEAMS WEBHOOK</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- MAY: WP x2 + ES x1 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">MAY</div>
       <div class="m-connector"></div>
       <div class="m-items">
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
-          <div class="item-text">원가 마감 (CO모듈) 자동화</div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">회의록 통합 필터링 및 검색 기능 추가</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">사용자별 최적화된 회의 분류가 가능하도록 기능 제공</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">자사몰</span></div>
+          <div class="item-text">상품상세 AI 컨텐츠 빌더</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">생성형 AI 로 상품상세 컨텐츠 (HTML/CSS) 자동 생성</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">기타</span></div>
+          <div class="item-text">AI 공유 플랫폼(샌드박스)</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">사내 코딩 작업물, 레포트, 대시보드 등 창작물을 등록, 공유할수 있는 서비스</p>
+          </div>
         </div>
         <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">기타</span></div>
-          <div class="item-text">재고 이전전기 프로세스 고도화</div>
-        </div>
-        <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Orbit</span></div>
-          <div class="item-text">AI Agent 클라우드 전환 및 MCP Server 운영 환경 배포</div>
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SCM_F&amp;CO</span></div>
+          <div class="item-text">부자재 수입(직송) 입고 관리 업무</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">OCR, 룰엔진+AI 분석을 입고 처리 자동화 기능 SCM OCR Agent / Naver Clova / Claude</p>
+          </div>
         </div>
       </div>
     </div>
-    <!-- JUN: WP + ES x3 -->
+    <!-- JUN: WP x3 + ES x2 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">JUN</div>
       <div class="m-connector"></div>
       <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">AI 스타일설명 및 검색키워드 생성</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">상품 정보를 기반으로 스타일 설명과 검색 키워드를 자동 생성</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">자사몰</span></div>
+          <div class="item-text">상품 데이터 구조화</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">상품 메타 데이터 정의 및 구조화 → 여러 과제에 다양하게 활용되는 product ontology 구축</p>
+          </div>
+        </div>
         <div class="item-card team-wp">
           <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">전자결재</span></div>
           <div class="item-text">결재라인 UIUX 개선</div>
@@ -645,16 +1063,18 @@
           </div>
         </div>
         <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
-          <div class="item-text">AI-EAS 신규구축</div>
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">F&amp;Co EAS</span></div>
+          <div class="item-text">AI 경비 처리 자동화</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">OCR, 룰엔진+AI 분석을 통한 경비 처리 자동화 기능</p>
+          </div>
         </div>
         <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
-          <div class="item-text">Vendor Portal 재구축</div>
-        </div>
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
-          <div class="item-text">부가세신고 업무개선 (자동화) 2차</div>
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">WMS</span></div>
+          <div class="item-text">인력효율성평가 및 보조업무 자동화</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">당일 출고 물동량 대비 인력 적정성 평가 및 보조 관리 업무 지시 자동화</p>
+          </div>
         </div>
       </div>
     </div>
@@ -675,67 +1095,124 @@
     <span class="s-range">Jul — Dec</span>
   </div>
   <div class="month-grid">
-    <!-- JUL: EA -->
+    <!-- JUL: ES x2 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">JUL</div>
       <div class="m-connector"></div>
       <div class="m-items">
-        <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Weave</span></div>
-          <div class="item-text">대용량 처리를 위한 분산 아키텍처 전환</div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SCM_NEW PLM</span></div>
+          <div class="item-text">Design AI</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">디자인 프롬프트를 통한 스케치 및 완성품 산출 GPT Image / Gemini Nanobanana AI 기능 탑재</p>
+          </div>
+        </div>
+        <div class="item-card team-es">
+          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">SCM_NEW PLM</span></div>
+          <div class="item-text">BOM 추출</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">Adobe illustrator를 토대로 해당 제/상품의 BOM 리스트 산출</p>
+          </div>
         </div>
       </div>
     </div>
-    <!-- AUG: ES + EA -->
+    <!-- AUG: WP -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">AUG</div>
       <div class="m-connector"></div>
       <div class="m-items">
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">기타</span></div>
-          <div class="item-text">제조원가 명세서 자동 생성 프로세스</div>
-        </div>
-        <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Weave</span></div>
-          <div class="item-text">재무(SAP FI) 및 IT 프로젝트관리(Jira) 지식그래프 구축</div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">자사몰</span></div>
+          <div class="item-text">AI 컨텐츠 생성</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">CMS 내 AI 컨텐츠 제작 기능 내재화 및 신규 구좌 개발</p>
+          </div>
         </div>
       </div>
     </div>
-    <div class="m-col"><div class="m-dot"></div><div class="m-label">SEP</div></div>
-    <!-- OCT: EA -->
+    <!-- SEP: WP x3 -->
+    <div class="m-col active">
+      <div class="m-dot"></div><div class="m-label">SEP</div>
+      <div class="m-connector"></div>
+      <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">프롬프트 라이브러리 추가</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">좋은 품질의 프롬프트를 등록/재사용 하고 공유 할수 있는 기능을 제공</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">자사몰</span></div>
+          <div class="item-text">개인화 프로모션</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">고객 행동 및 고객 데이터 기반 맞춤형 프로모션 혜택 엔진 구축</p>
+          </div>
+        </div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">자사몰</span></div>
+          <div class="item-text">CMS/BO 통합 프로젝트</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">CMS 와 BO 통합 시스템으로 구축</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- OCT: WP + EA Data LakeHouse -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">OCT</div>
       <div class="m-connector"></div>
       <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">ECOMS</span></div>
+          <div class="item-text">1:1 문의 자동 답변</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">판매채널 1:1 문의 수집 및 AI 자동 답변 초안 생성</p>
+          </div>
+        </div>
         <div class="item-card team-ea">
           <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Threads</span></div>
-          <div class="item-text">사내 주요 데이터 (인사, 회계, M365) 소스 연동</div>
+          <div class="item-text">Data LakeHouse</div>
+          <div class="card-tooltip">
+            <img src="./tmp/Data_LakeHouse.png" class="tooltip-img" alt="Data LakeHouse">
+            <p class="tooltip-desc">AI Agent들이 정제된 내부 서비스 데이터 활용을 할 수 있는 데이터 레이크하우스</p>
+          </div>
         </div>
       </div>
     </div>
-    <!-- NOV: EA -->
+    <!-- NOV: WP + EA 지식서비스 -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">NOV</div>
       <div class="m-connector"></div>
       <div class="m-items">
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">자사몰</span></div>
+          <div class="item-text">자사몰 AI CS 챗봇</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">상품 추천, FAQ 정보 응답 및 CS 자동 응대와 업무 처리까지 가능한 올인원 자사몰 챗봇 구축</p>
+          </div>
+        </div>
         <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Threads</span></div>
-          <div class="item-text">배치성(CDC/Glue) 및 실시간(Kafka/Flink) 데이터 파이프라인 구축</div>
+          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Weave</span></div>
+          <div class="item-text">(온톨로지) 지식서비스</div>
+          <div class="card-tooltip">
+            <img src="./tmp/Ontology.png" class="tooltip-img" alt="온톨로지 지식서비스">
+            <p class="tooltip-desc">임직원 기준 6개 도메인(전자결재, 회의록, 근태, 프로젝트 관리 등)의 의미론적 추론 서비스</p>
+          </div>
         </div>
       </div>
     </div>
-    <!-- DEC: ES + EA -->
+    <!-- DEC: WP -->
     <div class="m-col active">
       <div class="m-dot"></div><div class="m-label">DEC</div>
       <div class="m-connector"></div>
       <div class="m-items">
-        <div class="item-card team-es">
-          <div class="card-header"><span class="team-badge es">ES</span><span class="tag tag-es">운영</span></div>
-          <div class="item-text">IFRS18 내부거래 (특수관계자거래) 준비작업</div>
-        </div>
-        <div class="item-card team-ea">
-          <div class="card-header"><span class="team-badge ea">EA</span><span class="tag tag-ea">Threads</span></div>
-          <div class="item-text">외부 연동 데이터 확장 적용</div>
+        <div class="item-card team-wp">
+          <div class="card-header"><span class="team-badge wp">WP</span><span class="tag tag-wp">회의록</span></div>
+          <div class="item-text">파일 분석 기능 추가</div>
+          <div class="card-tooltip">
+            <p class="tooltip-desc">첨부된 파일을 분석하여 AI 가 요약하고, 인사이트 제공</p>
+          </div>
         </div>
       </div>
     </div>
@@ -745,20 +1222,6 @@
 
 </div><!-- /snake -->
 
-<!-- LEGEND -->
-<div class="legend">
-  <div class="legend-section">
-    <div class="legend-item"><span class="legend-tag tag-wp">WP</span><span style="color:var(--gray);font-size:.65rem">회의록 · 전자결재</span></div>
-  </div>
-  <div class="legend-sep"></div>
-  <div class="legend-section">
-    <div class="legend-item"><span class="legend-tag tag-es">ES</span><span style="color:var(--gray);font-size:.65rem">AI · 운영 · 기타</span></div>
-  </div>
-  <div class="legend-sep"></div>
-  <div class="legend-section">
-    <div class="legend-item"><span class="legend-tag tag-ea">EA</span><span style="color:var(--gray);font-size:.65rem">Orbit · Weave · Threads</span></div>
-  </div>
-</div>
 
 <!-- GLOBAL TOOLTIP -->
 <div id="global-tooltip"></div>
@@ -770,7 +1233,8 @@
   const lb       = document.getElementById('lightbox');
   const lbImg    = document.getElementById('lb-img');
   const gTooltip = document.getElementById('global-tooltip');
-  const allCards = Array.from(document.querySelectorAll('.item-card'));
+  const allCards   = Array.from(document.querySelectorAll('.item-card'));
+  const allHeaders = Array.from(document.querySelectorAll('.s-header'));
   const GAP      = 10;
   let hideTimer  = null;
 
@@ -806,10 +1270,9 @@
     gTooltip.classList.add('active');
     document.body.style.overflow = 'hidden';
 
-    // 호버 카드 제외 나머지 dimming
-    allCards.forEach(c => {
-      if (c !== card) c.classList.add('dimmed');
-    });
+    // 호버 카드는 dimmed 제거, 나머지는 dimmed 추가
+    allCards.forEach(c => c.classList.toggle('dimmed', c !== card));
+    allHeaders.forEach(h => h.classList.add('dimmed'));
   }
 
   function hideTooltip() {
@@ -817,6 +1280,7 @@
       gTooltip.classList.remove('active');
       document.body.style.overflow = '';
       allCards.forEach(c => c.classList.remove('dimmed'));
+      allHeaders.forEach(h => h.classList.remove('dimmed'));
     }, 80);
   }
 
@@ -837,19 +1301,96 @@
     if (e.key === 'Escape') lb.classList.remove('active');
   });
 
+  // ── 태그 필터 ──
+  let activeTag = null;
+
+  function clearTagFilter() {
+    activeTag = null;
+    document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('on'));
+    allCards.forEach(c => c.classList.remove('tag-dimmed'));
+  }
+
+  function applyTagFilter(tag) {
+    activeTag = tag;
+    document.querySelectorAll('.tag-btn').forEach(b => {
+      b.classList.toggle('on', b.dataset.tag === tag);
+    });
+    const currentTeam = document.body.getAttribute('data-filter');
+    allCards.forEach(card => {
+      // 팀 필터로 이미 숨겨진 카드는 태그 필터 적용 안 함
+      if (currentTeam && !card.classList.contains(`team-${currentTeam}`)) {
+        card.classList.remove('tag-dimmed');
+        return;
+      }
+      const cardTags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.trim());
+      card.classList.toggle('tag-dimmed', !cardTags.includes(tag));
+    });
+  }
+
+  document.querySelectorAll('.tag-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (activeTag === btn.dataset.tag) {
+        clearTagFilter(); // 같은 태그 재클릭 시 해제
+      } else {
+        applyTagFilter(btn.dataset.tag);
+      }
+    });
+  });
+
   // ── 팀 필터 ──
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
       btn.classList.add('on');
       const team = btn.dataset.team;
+
       if (team === 'all') {
         document.body.removeAttribute('data-filter');
       } else {
         document.body.setAttribute('data-filter', team);
       }
+
+      // 해당 팀 legend-section만 표시
+      const stickyNav = document.querySelector('.sticky-nav');
+      document.querySelectorAll('.legend-section').forEach(s => s.classList.remove('visible'));
+      if (team !== 'all') {
+        document.querySelector(`.legend-${team}`)?.classList.add('visible');
+        stickyNav.classList.add('legend-open');
+      } else {
+        stickyNav.classList.remove('legend-open');
+      }
+
+      // 팀 전환 시 태그 필터 초기화
+      clearTagFilter();
     });
   });
+
+  // ── 버튼 카운트 뱃지 ──
+  (function() {
+    // 팀 필터 버튼 카운트
+    const teamCounts = { all: allCards.length, wp: 0, es: 0, ea: 0 };
+    allCards.forEach(c => {
+      if (c.classList.contains('team-wp')) teamCounts.wp++;
+      else if (c.classList.contains('team-es')) teamCounts.es++;
+      else if (c.classList.contains('team-ea')) teamCounts.ea++;
+    });
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      const n = teamCounts[btn.dataset.team] ?? 0;
+      btn.insertAdjacentHTML('beforeend', `<span class="btn-count">${n}</span>`);
+    });
+
+    // 태그 버튼 카운트
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+      const tag = btn.dataset.tag;
+      const team = btn.classList.contains('wp') ? 'team-wp'
+                 : btn.classList.contains('es') ? 'team-es' : 'team-ea';
+      const n = allCards.filter(c =>
+        c.classList.contains(team) &&
+        Array.from(c.querySelectorAll('.tag')).some(t => t.textContent.trim() === tag)
+      ).length;
+      btn.insertAdjacentHTML('beforeend', `<span class="btn-count">${n}</span>`);
+    });
+  })();
 </script>
 </body>
 </html>
